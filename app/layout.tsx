@@ -20,9 +20,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", spaceGrotesk.variable)}
+      className={cn("antialiased bg-black dark", fontMono.variable, "font-sans", spaceGrotesk.variable)}
     >
-      <body>
+      <body className="max-w-7xl mx-auto min-h-screen bg-black text-white">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

@@ -1,19 +1,52 @@
-import { Button } from "@/components/ui/button"
+import type { Metadata } from "next"
+import { Navbar } from "@/components/navbar"
+import { HeroSection } from "@/components/landing/hero-section"
+import { ContentStreaming } from "@/components/landing/content-streaming"
+import { SwarmSimulator } from "@/components/landing/swarm-simulator"
+import { CliReference } from "@/components/landing/cli-reference"
+import { SystemRequirements } from "@/components/landing/system-requirements"
+import { TechnicalDetails } from "@/components/landing/technical-details"
+import { SystemNotes } from "@/components/landing/system-notes"
+import { DocumentNavigator } from "@/components/landing/document-navigator"
+import { Footer } from "@/components/footer"
+
+export const metadata: Metadata = {
+  title: "Fluxstream - Open Source Torrent Streaming Engine",
+  description: "Fluxstream is a high-performance, open-source torrent streaming engine. Watch anime, movies, series, and video providers directly on-the-fly without waiting for complete file downloads.",
+  keywords: [
+    "torrent streaming engine",
+    "open source",
+    "video streaming",
+    "stream anime",
+    "stream movies",
+    "stream series",
+    "magnet link player",
+    "instant playback",
+    "fluxstream",
+    "media providers"
+  ],
+  openGraph: {
+    title: "Fluxstream - Open Source Torrent Streaming Engine",
+    description: "Watch movies, series, and anime instantly on-the-fly using the open-source Fluxstream torrent engine.",
+    type: "website",
+  }
+}
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <DocumentNavigator />
+      <main className="flex-1">
+        <HeroSection />
+        <ContentStreaming />
+        <SwarmSimulator />
+        <SystemRequirements />
+        <CliReference />
+        <TechnicalDetails />
+        <SystemNotes />
+      </main>
+      <Footer />
     </div>
   )
 }
