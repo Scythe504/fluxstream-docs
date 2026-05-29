@@ -86,10 +86,6 @@ export function Navbar() {
               Get Started
             </Link>
           </Button>
-
-          <Button variant="ghost" size="icon" className="md:hidden" aria-label="Toggle Menu">
-            <Menu className="h-5 w-5" />
-          </Button>
         </div>
       </div>
     </header>

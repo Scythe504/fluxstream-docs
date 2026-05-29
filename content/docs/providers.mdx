@@ -7,44 +7,422 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 Fluxstream supports custom external catalogs via a modular **Addon Architecture**. An addon is simply a JSON manifest hosting endpoints that serve media lists (Creative Commons films, public archives, and legally owned collections).
 
+<Callout type="warn">
+  **Beta Disclaimer & Stability Warning**
+  
+  The Media Provider addon system is currently in **Beta** and highly unstable. It exists primarily as a proof-of-concept to showcase how Fluxstream's content cataloging can be expanded. 
+
+  * **Loose Coupling**: The Fluxstream streaming engine is loosely coupled and can work independently of this specific provider architecture. Developers are free to develop their own custom provider APIs or take the engine and client to build on top of them directly.
+  * **No Default Security/Protections**: No protective considerations have been taken as of now, such as requiring users to have an API key or validation token to make requests to provider endpoints.
+  * **Abuse & Liability**: Since providers must be self-hosted by developers, any abuse of their servers is not the responsibility of the Fluxstream developers.
+</Callout>
+
 ### Registering a Provider
 
-You can add providers in two ways:
-1. **Via UI**: In the web player, navigate to settings and click **Register Addon**. Paste the provider manifest URL.
-2. **Via Config**: Edit your local provider configuration file:
+Provider registration is managed dynamically via the provider registry. You can register your provider name, URL, and content type directly using the registration and verification form on this site.
 
-```json
-{
-  "providers": [
-    {
-      "id": "cc-movies",
-      "name": "Creative Commons Open Movies",
-      "endpoint": "https://feeds.fluxstream.app/cc-movies.json"
-    }
-  ]
-}
-```
+<Button asChild className="mt-2">
+  <a href="/provider" className="no-underline">Go to Provider Registry & Verification Form</a>
+</Button>
 
-### Manifest Schema
+#### Asynchronous Verification Worker
 
-If you wish to host your own legal provider catalog, implement this JSON structure:
+Once a provider is registered, the registry starts an asynchronous background verification worker with a **60-second timeout** to ensure the provider endpoint satisfies all contract requirements.
 
-```json
-{
-  "id": "my-legal-movies",
-  "name": "Public Domain Feed",
-  "version": "1.0.0",
-  "streams": [
-    {
-      "title": "Sintel (1080p)",
-      "magnet": "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel",
-      "size": "650 MB",
-      "category": "Sci-Fi"
-    }
-  ]
-}
-```
+The worker checks the following routes in sequence:
+1. **Trending** (`GET /api/trending`): Fetches the trending list and extracts a media ID (fallback: `"153518"`).
+2. **Seasonal** (`GET /api/seasonal?season=SUMMER&year=2023`): Validates seasonal listing structures.
+3. **Search** (`GET /api/search?q=Frieren`): Validates keyword search.
+4. **Genre** (`GET /api/genre?genre=Action`): Validates genre query parameters.
+5. **Airing** (`GET /api/airing`): Checks currently airing feeds.
+6. **Schedule** (`GET /api/schedule`): Validates release schedules.
+7. **Media Details** (`GET /api/{id}`): Verifies media details retrieval.
+8. **Episodes** (`GET /api/{id}/episodes`): Fetches episode lists and extracts the first episode number.
+9. **Torrent Sources** (`GET /api/{id}/episodes/{epNumber}/sources`): Verifies magnet link stream discovery.
+10. **Recommendations** (`GET /api/{id}/recommendations`): Checks recommended lists.
+
+If a developer selects the **Disable Optional Routes** option during registration, the verifier will skip all optional routes (Trending, Seasonal, Genre, Airing, Schedule, Media Details, and Recommendations) and only enforce the minimum core contracts: **Search**, **Episodes**, and **Sources**.
+
+If any checked route fails to return a `200 OK` status or fails JSON decoding, the verification fails.
+
+#### User Registration Flow
+
+In the web player interface:
+1. Navigate to settings and click **Register Addon**.
+2. Paste the provider base URL and enter its details.
+3. Upon submission, the provider details are sent to the registry backend.
+4. The user is redirected directly to `/provider?id=[id]` to monitor the live status of the verification worker.
+
+
+### Hosting Requirements
+
+* **Self-Hosting**: Providers must be independently hosted by developers on their own servers.
+* **CORS & Headers**: You can ignore CORS policies and access-control origin headers. The streaming engine **proxies all request traffic** to your provider and automatically strips `Access-Control-*` headers to avoid browser CORS issues.
+* **Security & Limits**: Rate limiting, request authorization, and firewalls must be managed directly on your developer hosting stack.
 
 <Callout type="info">
   Catalogs are loaded and cached locally in the SQLite database to avoid latency and protect search queries.
 </Callout>
+
+---
+
+## Provider API Design & Schemas
+
+If you are developing a custom media catalog API for Fluxstream, here are the architectural guidelines and data structures.
+
+### Design Decisions
+
+* **Optional Endpoints**: Feeds like airing schedules (`/api/schedule`) and seasonal anime (`/api/seasonal`) are anime-specific and can be skipped if they are not relevant to your catalog.
+* **Minimum Core Endpoints**: To support media playback, a provider only needs to implement three core routes:
+  1. Search (`/api/search`) - To query media matching keywords.
+  2. Episode List (`/api/{id}/episodes`) - To list files/episodes.
+  3. Torrent Sources (`/api/{id}/episodes/{epNumber}/sources`) - To retrieve magnet streams.
+
+### Response JSON Schemas
+
+Your API should return the following generalized JSON structures:
+
+<ResponseCard title="Media Object Schema" lang="json">
+```json
+{
+  "id": "string (unique catalog ID)",
+  "type": "anime | movie | series",
+  "title": "string",
+  "original_title": "string",
+  "cover": "string (image URL)",
+  "banner": "string (image URL)",
+  "description": "string",
+  "score": "number (float, e.g., 8.4)",
+  "genres": ["string"],
+  "status": "RELEASING | FINISHED | CANCELLED | NOT_YET_AIRED",
+  "season": "WINTER | SPRING | SUMMER | FALL",
+  "season_year": "number (int)",
+  "total_episodes": "number (int) or null",
+  "duration": "number (int) or null"
+}
+```
+</ResponseCard>
+
+<ResponseCard title="Episode List Schema" lang="json">
+```json
+{
+  "total_count": "number (int)",
+  "episodes": [
+    {
+      "id": "number (int)",
+      "number": "string (e.g., '1')",
+      "title": "string",
+      "air_date": "number (Unix timestamp)",
+      "overview": "string",
+      "image": "string (image URL)"
+    }
+  ],
+  "specials": []
+}
+```
+</ResponseCard>
+
+<ResponseCard title="Torrent Source Schema" lang="json">
+```json
+{
+  "title": "string (torrent display name)",
+  "magnet_uri": "string (magnet connection URI)",
+  "seeders": "number (int)",
+  "leechers": "number (int)",
+  "size": "number (file size in bytes)",
+  "info_hash": "string (40-character torrent infohash)"
+}
+```
+</ResponseCard>
+
+---
+
+## Reference Implementation: Aniflux API
+
+Aniflux is a catalog provider built for Fluxstream that retrieves anime media feeds. Below is the API reference for the Aniflux service.
+
+### 1. Root Handshake
+
+<RouteCard method="GET" path="/api/">
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+{
+  "message": "Hello World"
+}
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 2. Trending Anime
+
+<RouteCard method="GET" path="/api/trending">
+
+**Query Parameters:**
+* `page` (optional, default: `1`) - Page offset
+* `perPage` (optional, default: `5`) - Results limit per page
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+[
+  {
+    "id": 16498,
+    "title": {
+      "english": "Attack on Titan Final Season",
+      "romaji": "Shingeki no Kyojin: The Final Season",
+      "native": "進撃の巨人 The Final Season"
+    },
+    "status": "FINISHED",
+    "season": "WINTER",
+    "seasonYear": 2023,
+    "episodes": 28,
+    "genres": ["Action", "Drama", "Fantasy"]
+  }
+]
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 3. Seasonal Anime
+
+<RouteCard method="GET" path="/api/seasonal">
+
+**Query Parameters:**
+* `season` (optional) - Season name (`WINTER`, `SPRING`, `SUMMER`, `FALL`)
+* `year` (optional) - Release year (e.g. `2024`)
+* `page` (optional, default: `1`)
+* `perPage` (optional, default: `24`)
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+[
+  {
+    "id": 154587,
+    "title": {
+      "english": "Frieren: Beyond Journey's End",
+      "romaji": "Sousou no Frieren"
+    },
+    "status": "RELEASING",
+    "season": "FALL",
+    "seasonYear": 2023,
+    "episodes": 28
+  }
+]
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 4. Search Anime
+
+<RouteCard method="GET" path="/api/search">
+
+**Query Parameters:**
+* `q` (required) - Query string (e.g. `jujutsu`)
+* `page` (optional, default: `1`)
+* `perPage` (optional, default: `24`)
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+[
+  {
+    "id": 113415,
+    "title": {
+      "english": "Jujutsu Kaisen",
+      "romaji": "Jujutsu Kaisen"
+    },
+    "status": "FINISHED",
+    "episodes": 24
+  }
+]
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 5. Media Detail by Genre
+
+<RouteCard method="GET" path="/api/genre">
+
+**Query Parameters:**
+* `genre` (required) - Comma-separated list of genres (e.g. `Action,Adventure`)
+* `page` (optional, default: `1`)
+* `perPage` (optional, default: `24`)
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+[
+  {
+    "id": 21,
+    "title": {
+      "romaji": "One Piece"
+    },
+    "genres": ["Action", "Adventure", "Fantasy"]
+  }
+]
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 6. Currently Airing
+
+<RouteCard method="GET" path="/api/airing">
+
+**Query Parameters:**
+* `page` (optional, default: `1`)
+* `perPage` (optional, default: `24`)
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+[
+  {
+    "id": 153518,
+    "title": {
+      "romaji": "Jujutsu Kaisen Season 2"
+    },
+    "status": "RELEASING"
+  }
+]
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 7. Airing Schedule
+
+<RouteCard method="GET" path="/api/schedule">
+
+**Query Parameters:**
+* `page` (optional, default: `1`)
+* `perPage` (optional, default: `24`)
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+[
+  {
+    "id": 12456,
+    "airingAt": 1698243600,
+    "timeUntilAiring": 3600,
+    "episode": 14,
+    "media": {
+      "id": 153518,
+      "title": {
+        "english": "Jujutsu Kaisen Season 2"
+      }
+    }
+  }
+]
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 8. Single Anime Details
+
+<RouteCard method="GET" path="/api/{id}">
+
+**Route Parameters:**
+* `id` (required) - AniList media ID (e.g. `153518`)
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+{
+  "id": 153518,
+  "title": {
+    "english": "Jujutsu Kaisen Season 2",
+    "native": "呪術廻戦 懐玉・玉折／渋谷事変"
+  },
+  "status": "FINISHED",
+  "genres": ["Action", "Supernatural"],
+  "episodes": 23,
+  "description": "Second season of Jujutsu Kaisen."
+}
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 9. Episodes List
+
+<RouteCard method="GET" path="/api/{id}/episodes">
+
+**Route Parameters:**
+* `id` (required) - AniList media ID (e.g. `153518`)
+
+**Query Parameters:**
+* `page` (optional, default: `1`)
+* `perPage` (optional, default: `24`)
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+{
+  "total_count": 23,
+  "episodes": [
+    {
+      "id": 1,
+      "number": "1",
+      "title": "Hidden Inventory",
+      "air_date": 1688644800,
+      "overview": "Gojo and Geto protect the Star Plasma Vessel."
+    }
+  ]
+}
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 10. Episode Torrent Sources
+
+<RouteCard method="GET" path="/api/{id}/episodes/{epNumber}/sources">
+
+**Route Parameters:**
+* `id` (required) - AniList media ID (e.g. `153518`)
+* `epNumber` (required) - Episode number string (e.g. `1`)
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+[
+  {
+    "title": "[SubsPlease] Jujutsu Kaisen - 25 (1080p) [InfoHash]",
+    "magnet_uri": "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10",
+    "seeders": 421,
+    "leechers": 12,
+    "size": 1458296310,
+    "info_hash": "08ada5a7a6183aae1e09d831df6748d566095a10"
+  }
+]
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 11. Recommendations
+
+<RouteCard method="GET" path="/api/{id}/recommendations">
+
+**Route Parameters:**
+* `id` (required) - AniList media ID (e.g. `153518`)
+
+**Query Parameters:**
+* `page` (optional, default: `1`)
+* `perPage` (optional, default: `5`)
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+[
+  {
+    "id": 21856,
+    "title": {
+      "english": "Jujutsu Kaisen"
+    },
+    "status": "FINISHED"
+  }
+]
+```
+</ResponseCard>
+
+</RouteCard>

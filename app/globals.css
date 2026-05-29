@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 @import 'fumadocs-ui/css/shadcn.css';
 @import 'fumadocs-ui/css/preset.css';
 
@@ -117,8 +116,8 @@
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
   --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.92 0.004 286.32);
-  --accent-foreground: oklch(0.21 0.006 285.885);
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -156,4 +155,146 @@
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+.window-card-container,
+.terminal-card-container {
+  --border: transparent !important;
+  --card: transparent !important;
+  --secondary: transparent !important;
+  --fd-border: transparent !important;
+  --fd-card: transparent !important;
+  --fd-secondary: transparent !important;
+}
+
+.window-card-container figure,
+.window-card-container [data-rehype-pretty-code-fragment],
+.window-card-container .fd-codeblock,
+.window-card-container .nd-codeblock,
+.window-card-container pre:not(.ansi-logo-pre),
+.window-card-container code:not(.ansi-logo-pre),
+.terminal-card-container figure,
+.terminal-card-container [data-rehype-pretty-code-fragment],
+.terminal-card-container .fd-codeblock,
+.terminal-card-container .nd-codeblock,
+.terminal-card-container pre:not(.ansi-logo-pre),
+.terminal-card-container code:not(.ansi-logo-pre) {
+  background-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  border-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.window-card-container figure button,
+.window-card-container .fd-codeblock button,
+.window-card-container .nd-codeblock button,
+.terminal-card-container figure button,
+.terminal-card-container .fd-codeblock button,
+.terminal-card-container .nd-codeblock button {
+  display: none !important;
+}
+
+.window-card-container pre[class*="language-sh"] code .line::before,
+.window-card-container pre[class*="language-bash"] code .line::before,
+.window-card-container pre[class*="language-powershell"] code .line::before,
+.window-card-container pre[class*="language-cmd"] code .line::before {
+  content: "$ ";
+  opacity: 0.4;
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.terminal-card-container pre code .line::before {
+  content: "$ ";
+  opacity: 0.4;
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.window-card-container figure,
+.window-card-container [data-rehype-pretty-code-fragment],
+.window-card-container .fd-codeblock,
+.window-card-container .nd-codeblock,
+.terminal-card-container figure,
+.terminal-card-container [data-rehype-pretty-code-fragment],
+.terminal-card-container .fd-codeblock,
+.terminal-card-container .nd-codeblock {
+  display: contents !important;
+}
+
+.window-card-container pre:not(.ansi-logo-pre),
+.terminal-card-container pre:not(.ansi-logo-pre) {
+  display: block !important;
+  overflow: visible !important;
+  width: max-content !important;
+  min-width: 100% !important;
+}
+
+[data-radix-scroll-area-viewport],
+[data-slot="scroll-area-viewport"] {
+  overflow: auto !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar,
+[data-slot="scroll-area-viewport"]::-webkit-scrollbar {
+  display: none !important;
+}
+
+[data-radix-scroll-area-viewport] > div,
+[data-slot="scroll-area-viewport"] > div {
+  min-width: 100%;
+  display: table !important;
+}
+
+.fd-codeblock,
+.nd-codeblock,
+figure[data-rehype-pretty-code-fragment] {
+  background-color: oklch(0.141 0.005 285.823 / 50%) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid oklch(1 0 0 / 10%) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+  margin: 1.5rem 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.fd-codeblock pre,
+.nd-codeblock pre,
+figure[data-rehype-pretty-code-fragment] pre {
+  margin: 0 !important;
+  padding: 1rem 1.25rem !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.fd-codeblock code,
+.nd-codeblock code,
+figure[data-rehype-pretty-code-fragment] code {
+  font-size: 0.8rem !important;
+  line-height: 1.6 !important;
+  background: transparent !important;
+}
+
+.fd-codeblock button,
+.nd-codeblock button,
+figure[data-rehype-pretty-code-fragment] button {
+  background: oklch(1 0 0 / 3%) !important;
+  border: 1px solid oklch(1 0 0 / 10%) !important;
+  color: oklch(0.705 0.015 286.067) !important;
+  border-radius: 0.375rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.fd-codeblock button:hover,
+.nd-codeblock button:hover,
+figure[data-rehype-pretty-code-fragment] button:hover {
+  background: oklch(1 0 0 / 8%) !important;
+  color: oklch(0.985 0 0) !important;
 }

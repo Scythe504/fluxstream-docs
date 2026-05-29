@@ -14,6 +14,9 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card"
+import { CliReference, AnsiLogo } from "@/components/landing/cli-reference"
+import { WindowCard, TerminalCard, CodeCard, ResponseCard } from "@/components/window-card"
+import { RouteCard } from "@/components/ui/route-card"
 
 interface PageProps {
   params: Promise<{
@@ -34,7 +37,7 @@ export default async function Page({ params }: PageProps) {
     <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsTitle className="text-pink-400 font-bold tracking-tight">{page.data.title}</DocsTitle>
       <DocsDescription className="text-zinc-400">{page.data.description}</DocsDescription>
-      <DocsBody className="text-zinc-300 font-mono text-sm leading-relaxed prose prose-zinc prose-invert">
+      <DocsBody className="text-zinc-300 text-sm leading-relaxed prose prose-zinc prose-invert">
         <MDX components={{
           Accordion,
           AccordionContent,
@@ -53,7 +56,14 @@ export default async function Page({ params }: PageProps) {
           CardTitle,
           CardAction,
           CardDescription,
-          CardContent
+          CardContent,
+          CliReference,
+          WindowCard,
+          TerminalCard,
+          AnsiLogo,
+          RouteCard,
+          CodeCard,
+          ResponseCard,
         }} />
       </DocsBody>
     </DocsPage>

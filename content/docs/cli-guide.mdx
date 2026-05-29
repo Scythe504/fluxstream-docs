@@ -1,0 +1,112 @@
+---
+title: CLI Command Reference
+description: Control your Fluxstream daemon services and environments directly from the CLI shell.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `fluxstream` command-line tool wraps Docker Compose commands to easily initialize configuration files, manage containers, and monitor services.
+
+<Callout type="info">
+  The CLI daemon relies on a running Docker daemon. Ensure Docker is running on your system before executing the daemon control commands.
+</Callout>
+
+---
+
+## Command Overview
+
+The CLI comes packaged with the following core commands:
+
+- [`fluxstream setup`](#fluxstream-setup) - Generates initial directory paths and downloads configuration templates.
+- [`fluxstream start`](#fluxstream-start) - Spins up the server and client container systems.
+- [`fluxstream status`](#fluxstream-status) - Queries the health of containers and pings API ports.
+- [`fluxstream where`](#fluxstream-where) - Resolves local and network listening endpoints.
+- [`fluxstream stop`](#fluxstream-stop) - Gracefully stops and removes composition layers.
+
+---
+
+## Commands
+
+### `fluxstream setup`
+
+Initializes application directories and downloads the standard Docker composition configs.
+
+<TerminalCard title="fluxstream setup">
+```bash
+fluxstream setup
+```
+</TerminalCard>
+
+#### Actions performed:
+1. Validates that Docker is installed on the host system.
+2. Identifies user config paths dynamically (e.g., `~/.config/fluxstream` or `%APPDATA%/Fluxstream`).
+3. Allocates folders for downloaded torrent contents.
+4. Generates and writes the localized `docker-compose.yml` config.
+
+---
+
+### `fluxstream start`
+
+Runs composition containers in daemon mode and prints network addresses.
+
+<TerminalCard title="fluxstream start">
+```bash
+fluxstream start
+```
+</TerminalCard>
+
+#### Actions performed:
+1. Checks that the Docker daemon is active.
+2. Verifies that `fluxstream setup` has been run first.
+3. Launches services in the background using `docker compose up -d`.
+4. Outputs local loopback (`http://localhost:3000`) and local area network (LAN) connection links.
+
+---
+
+### `fluxstream status`
+
+Queries container processes and tests backend API port connections.
+
+<TerminalCard title="fluxstream status">
+```bash
+fluxstream status
+```
+</TerminalCard>
+
+#### Actions performed:
+1. Lists running containers matching the name `fluxstream`.
+2. Resolves status of backend service by hitting the `http://localhost:8080/health` endpoint.
+3. Reports service connectivity and container health states.
+
+---
+
+### `fluxstream where`
+
+Displays active connection links and local IP configurations.
+
+<TerminalCard title="fluxstream where">
+```bash
+fluxstream where
+```
+</TerminalCard>
+
+#### Actions performed:
+1. Scrapes container state.
+2. Resolves LAN IP address configurations.
+3. Displays local and network URL routing paths.
+
+---
+
+### `fluxstream stop`
+
+Gracefully shuts down Docker Compose container groups.
+
+<TerminalCard title="fluxstream stop">
+```bash
+fluxstream stop
+```
+</TerminalCard>
+
+#### Actions performed:
+1. Shuts down running container layers via `docker compose down`.
+2. Stops API services and client servers while retaining persistent downloaded torrent files.

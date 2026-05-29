@@ -7,64 +7,157 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 Fluxstream exposes a REST API on the background server port, allowing external developers to query active download states and control stream caches.
 
+<Callout type="warn">
+  **Beta Disclaimer & Stability Warning**
+  
+  The Streaming Engine API is currently in **Beta** and highly unstable. It exists primarily as a demonstration of how the player's core streaming capabilities can be managed programmatically. 
+
+  * **Decoupled Architecture**: The engine is designed to be loosely coupled. You are free to build custom provider APIs, or take the streaming engine and client codebases and build on top of them directly.
+  * **No Protective Measures**: As of now, no protective security measures have been implemented (such as requiring users to have an API key or verification token to make requests to provider APIs).
+  * **Liability**: Since provider services must be independently hosted by developers, abuse of external servers is not the responsibility of the Fluxstream core project developers.
+</Callout>
+
 ### Base Endpoint
 
-All requests are authenticated via the API token if configured:
+All requests to the local streaming daemon should target:
 ```bash
-http://localhost:3000/api/v1
+http://localhost:3000/api
 ```
 
-### 1. Initiate a Stream
+---
 
-Register a new magnet link or torrent file with the sequential buffer download cache.
+## Videos API (`/videos`)
 
-* **Method**: `POST`
-* **Route**: `/stream`
-* **Payload**:
+### 1. Register a Torrent
+
+Add a new magnet link to the download manager. The engine immediately begins sequential buffering and metadata resolution.
+
+<RouteCard method="POST" path="/videos">
+
+<ResponseCard title="Request Payload" lang="json">
 ```json
 {
-  "magnet": "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel"
+  "magnet_link": "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel"
 }
 ```
-* **Response (202 Accepted)**:
+</ResponseCard>
+
+<ResponseCard title="Response (200 OK)" lang="json">
 ```json
 {
-  "infoHash": "08ada5a7a6183aae1e09d831df6748d566095a10",
-  "status": "connecting",
-  "playUrl": "http://localhost:3000/api/v1/stream/08ada5a7/play"
+  "video_id": "uqX92P"
 }
 ```
+</ResponseCard>
 
-### 2. Query Stream Performance
+</RouteCard>
 
-Fetch live stats of active torrent swarms, seeds, and download speeds.
+### 2. List Registered Videos
 
-* **Method**: `GET`
-* **Route**: `/stream/:infoHash`
-* **Response (200 OK)**:
+Retrieve metadata for all currently registered torrent downloads and local disk resources.
+
+<RouteCard method="GET" path="/videos">
+
+<ResponseCard title="Response (200 OK)" lang="json">
+```json
+[
+  {
+    "id": "uqX92P",
+    "magnet_link": "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel",
+    "file_path": "/tmp/fluxstream/Sintel.mp4",
+    "created_at": 1779956936,
+    "deleted": false
+  }
+]
+```
+</ResponseCard>
+
+</RouteCard>
+
+### 3. Fetch Video Metadata
+
+Retrieve file properties, sizes, names, and formats of a registered video by its ID.
+
+<RouteCard method="GET" path="/videos/:videoId/metadata">
+
+<ResponseCard title="Response (200 OK)" lang="json">
 ```json
 {
-  "infoHash": "08ada5a7a6183aae1e09d831df6748d566095a10",
-  "seeds": 126,
-  "peers": 43,
-  "downloadSpeed": "8.4 MB/s",
-  "progress": 0.18
+  "name": "Sintel.mp4",
+  "path": "/tmp/fluxstream/Sintel.mp4",
+  "length": 12938102,
+  "extension": ".mp4",
+  "is_video": true
 }
 ```
+</ResponseCard>
 
-### 3. Terminate a Stream
+</RouteCard>
 
-Clean up download buffers and close peer-to-peer network connections.
+### 4. Stream Video Contents
 
-* **Method**: `DELETE`
-* **Route**: `/stream/:infoHash`
-* **Response (200 OK)**:
+Streams the sequential torrent buffer on-the-fly or returns the completed video file on disk. Supports range queries and streaming headers.
+
+<RouteCard method="GET" path="/videos/:videoId/stream">
+
+**Response (200 OK / 206 Partial Content):**
+Returns the live video binary stream.
+
+</RouteCard>
+
+### 5. Serve Subtitles
+
+Serves extracted subtitle tracks for the streaming media.
+
+<RouteCard method="GET" path="/videos/:videoId/subs">
+
+**Response (200 OK):**
+Returns SRT/VTT subtitle assets.
+
+</RouteCard>
+
+---
+
+## Torrents API (`/torrents`)
+
+### 1. Swarm Stats Stream
+
+Connect to a Server-Sent Events (SSE) feed of real-time swarm download metrics (speed, active peers, seeders, buffer chunks).
+
+<RouteCard method="GET" path="/torrents/:videoId/stats/stream">
+
+<ResponseCard title="Response (Server-Sent Events)" lang="text/event-stream">
 ```json
 {
-  "message": "Stream terminated successfully and cache cleared."
+  "bytes_completed": 4535808,
+  "bytes_missing": 8402294,
+  "total_bytes": 12938102,
+  "progress": 0.35,
+  "active_peers": 12,
+  "total_peers": 42,
+  "download_speed": 1048576,
+  "upload_speed": 512
 }
 ```
+</ResponseCard>
 
-<Callout type="warn">
-  Deleting stream entries will release storage. Ensure media tracks are not being read by clients before calling terminate.
-</Callout>
+</RouteCard>
+
+### 2. Remove Torrent & Cleanup
+
+Stop sequential download streams, clean up memory buffers, and optionally delete on-disk files.
+
+<RouteCard method="DELETE" path="/torrents/:videoId">
+
+<ResponseCard title="Request Payload" lang="json">
+```json
+{
+  "delete_resource": true
+}
+```
+</ResponseCard>
+
+**Response (204 No Content):**
+No content returned.
+
+</RouteCard>

@@ -24,7 +24,7 @@ export default function RootLayout({
       className={cn("antialiased bg-black dark", fontMono.variable, "font-sans", spaceGrotesk.variable)}
     >
       <body className="max-w-7xl mx-auto min-h-screen bg-black text-white">
-        <RootProvider>
+        <RootProvider theme={{ enabled: false }}>
           <ThemeProvider>{children}</ThemeProvider>
         </RootProvider>
       </body>

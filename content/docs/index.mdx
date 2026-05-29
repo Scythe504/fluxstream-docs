@@ -6,24 +6,41 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Terminal, Database, Settings } from 'lucide-react';
 
-### What it is?
+## What it is?
 
 It is simply a http server which runs on your Desktop or any similar environments, 
 taking magnet links and playing media as seekable video stream, you can inherently use any 
 standard media players which support streaming through http routes, (you can use VLC but, current versions - v0.2.x does not support this method smoothly), 
 there is a web client bundled with the standard installation process, which is with docker (docker compose).
 
-<Callout type="info">
+<Callout type='info'>
   Fluxstream does not index, host, or distribute copyrighted media files. It is an open-source tool/program designed for streaming media, with magnet the users are responsible for sourcing their own legally sourced content.
 </Callout>
 
-### Key Architectures
+## Downloadable Contents
+1. **CLI (Command Line Tool)**: This is the primary way to use fluxstream when going the route of using fluxstream with docker (docker-compose).
+
+2. **NextJs Web Application**: This is a web client which has a video player and interface to use community made verified media providers,
+ and manage video files remotely which is stored in the server or desktop where the server writes the media files you stream.
+
+3. **Streaming Server (Go web server)**: This is the main program which handles resolving all the media providers metadata/sources,
+ and your own sourced magnet links, and provides a http route which serves the media file in realtime, 
+ it also handles extracting subtitles from media files (english only support for now). 
+
+<Callout type='info'>
+  To compile from source you will need to have Go (v1.25.7 or higher) and Node.js(v20 or higher) and ffmpeg (v4.4.2 or higher).
+</Callout>
+
+## Getting Started
+- [Docker](/docs/installation/#docker)
+- [Manual Install](/docs/installation/#manual-installation)
+## Key Architectures
 
 * **Real-time Streaming Engine**: Avoid waiting for full downloads. The client starts playback by prioritizing the sequential blocks needed for the video buffer.
 * **Addon-friendly Architecture**: Register media providers or personal scraper feeds in seconds to group media collections cleanly.
 * **Privacy First**: Fully self-hosted with no remote analytics, external trackers, or telemetry.
 
-### Documentation Directory
+## Documentation Directory
 
 Select a category below to configure and launch your self-hosted instance.
 

@@ -3,6 +3,7 @@
   "pages": [
     "index",
     "installation",
+    "cli-guide",
     "providers",
     "api"
   ]
