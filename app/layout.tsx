@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils";
+import { RootProvider } from "fumadocs-ui/provider/next";
 
 const spaceGrotesk = Space_Grotesk({subsets:['latin'],variable:'--font-sans'})
 
@@ -23,7 +24,9 @@ export default function RootLayout({
       className={cn("antialiased bg-black dark", fontMono.variable, "font-sans", spaceGrotesk.variable)}
     >
       <body className="max-w-7xl mx-auto min-h-screen bg-black text-white">
-        <ThemeProvider>{children}</ThemeProvider>
+        <RootProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </RootProvider>
       </body>
     </html>
   )

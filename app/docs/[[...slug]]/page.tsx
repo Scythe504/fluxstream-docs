@@ -1,6 +1,19 @@
 import { source } from "@/lib/source"
 import { DocsPage, DocsBody, DocsTitle, DocsDescription } from "fumadocs-ui/page"
 import { notFound } from "next/navigation"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Card as ShadcnCard,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card"
 
 interface PageProps {
   params: Promise<{
@@ -22,7 +35,26 @@ export default async function Page({ params }: PageProps) {
       <DocsTitle className="text-pink-400 font-bold tracking-tight">{page.data.title}</DocsTitle>
       <DocsDescription className="text-zinc-400">{page.data.description}</DocsDescription>
       <DocsBody className="text-zinc-300 font-mono text-sm leading-relaxed prose prose-zinc prose-invert">
-        <MDX />
+        <MDX components={{
+          Accordion,
+          AccordionContent,
+          AccordionItem,
+          AccordionTrigger,
+          Badge,
+          Button,
+          Tabs,
+          TabsContent,
+          TabsList,
+          TabsTrigger,
+          Card: ShadcnCard,
+          ShadcnCard,
+          CardHeader,
+          CardFooter,
+          CardTitle,
+          CardAction,
+          CardDescription,
+          CardContent
+        }} />
       </DocsBody>
     </DocsPage>
   )
