@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Activity, Play, RotateCcw, AlertTriangle, ShieldCheck, HelpCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export function SwarmSimulator() {
   const [mode, setMode] = useState<"sequential" | "random">("sequential")
@@ -193,39 +194,41 @@ export function SwarmSimulator() {
               </div>
 
               <div className="flex flex-col gap-3">
-                <button
+                <Button
                   onClick={() => setMode("sequential")}
-                  className={`w-full text-left p-4 rounded-xl border font-mono transition-all cursor-pointer ${
+                  variant="outline"
+                  className={`w-full h-auto text-left items-start flex-col p-4 rounded-xl font-mono whitespace-normal ${
                     mode === "sequential"
-                      ? "border-pink-500/30 bg-pink-500/[0.03] text-white"
-                      : "border-white/5 bg-transparent text-zinc-500 hover:text-zinc-400"
+                      ? "border-pink-500/30 bg-pink-500/[0.03] text-white hover:bg-pink-500/[0.05]"
+                      : "border-white/5 bg-transparent text-zinc-500 hover:text-zinc-400 hover:bg-white/[0.02]"
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center justify-between w-full mb-1.5">
                     <span className="text-xs font-semibold">Sequential Streaming</span>
                     {mode === "sequential" && <div className="h-1.5 w-1.5 rounded-full bg-pink-400 animate-pulse" />}
                   </div>
-                  <p className="text-[10px] text-zinc-400 leading-normal">
+                  <p className="text-[10px] text-zinc-400 leading-normal font-normal">
                     Prioritizes downloading from your active seek point forward. Restarts streaming in seconds when skipping chapters.
                   </p>
-                </button>
+                </Button>
 
-                <button
+                <Button
                   onClick={() => setMode("random")}
-                  className={`w-full text-left p-4 rounded-xl border font-mono transition-all cursor-pointer ${
+                  variant="outline"
+                  className={`w-full h-auto text-left items-start flex-col p-4 rounded-xl font-mono whitespace-normal ${
                     mode === "random"
-                      ? "border-zinc-700 bg-zinc-900/[0.05] text-white"
-                      : "border-white/5 bg-transparent text-zinc-500 hover:text-zinc-400"
+                      ? "border-zinc-700 bg-zinc-900/[0.05] text-white hover:bg-zinc-900/[0.08]"
+                      : "border-white/5 bg-transparent text-zinc-500 hover:text-zinc-400 hover:bg-white/[0.02]"
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center justify-between w-full mb-1.5">
                     <span className="text-xs font-semibold">Traditional Torrenting</span>
                     {mode === "random" && <div className="h-1.5 w-1.5 rounded-full bg-zinc-500 animate-pulse" />}
                   </div>
-                  <p className="text-[10px] text-zinc-400 leading-normal">
+                  <p className="text-[10px] text-zinc-400 leading-normal font-normal">
                     Maintains random chunk distribution. Seeking stalls playback indefinitely because target pieces aren't prioritized.
                   </p>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -262,20 +265,22 @@ export function SwarmSimulator() {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className="flex-1 py-2 px-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white font-mono text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
+                  className="flex-1 font-mono text-xs"
                 >
                   <Play className={`h-3 w-3 ${isPlaying ? "fill-white" : ""}`} />
                   {isPlaying ? "Pause" : "Resume"}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={handleReset}
-                  className="p-2 rounded-lg border border-white/10 bg-transparent hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
                   title="Reset Simulation"
                 >
                   <RotateCcw className="h-3 w-3" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -347,16 +352,17 @@ export function SwarmSimulator() {
                 {progress.map((val, idx) => {
                   const isSeekTarget = seekIndex === idx
                   return (
-                    <button
+                    <Button
                       key={idx}
                       onClick={() => handleBlockClick(idx)}
-                      className={`aspect-[1/2] rounded-sm transition-all duration-300 relative group cursor-pointer border ${
+                      variant="ghost"
+                      className={`h-auto p-0 min-w-0 aspect-[1/2] rounded-sm transition-all duration-300 relative group cursor-pointer border ${
                         val === 1
                           ? mode === "sequential"
-                            ? "bg-pink-400/90 border-pink-400/40 shadow-[0_0_8px_rgba(247,141,167,0.3)]"
-                            : "bg-zinc-500 border-zinc-500/30"
+                            ? "bg-pink-400/90 border-pink-400/40 hover:bg-pink-400/90 shadow-[0_0_8px_rgba(247,141,167,0.3)]"
+                            : "bg-zinc-500 border-zinc-500/30 hover:bg-zinc-500"
                           : isSeekTarget
-                            ? "bg-amber-500/20 border-amber-500/60 animate-pulse"
+                            ? "bg-amber-500/20 border-amber-500/60 hover:bg-amber-500/20 animate-pulse"
                             : "bg-white/[0.02] border-transparent hover:border-white/10 hover:bg-white/[0.05]"
                       }`}
                       title={`Seek to ${formatTime(idx * 30)} (Block ${idx})`}

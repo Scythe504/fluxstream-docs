@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Play, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { handleScroll } from "@/lib/utils"
 
 function GithubIcon(props: React.ComponentProps<"svg">) {
   return (
@@ -23,13 +24,6 @@ function GithubIcon(props: React.ComponentProps<"svg">) {
 }
 
 export function Navbar() {
-  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      e.preventDefault()
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-md">

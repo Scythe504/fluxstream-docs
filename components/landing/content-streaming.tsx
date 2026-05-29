@@ -5,11 +5,18 @@ import Link from "next/link"
 import { ShieldAlert, Plus, BookOpen, Play, Activity, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { MacDots } from "../mac-dots"
 
 export function ContentStreaming() {
   const [activeTab, setActiveTab] = useState<"providers" | "magnets">("providers")
   const [status, setStatus] = useState<"idle" | "connecting" | "playing">("idle")
   const [isHovered, setIsHovered] = useState(false)
+  const [selectedSource, setSelectedSource] = useState({
+    file: "Sintel.2010.1080p.mkv",
+    addon: "Blender Open Movies",
+    size: "650 MB",
+    videoUrl: "/sintel.webm"
+  })
   const magnetLink = "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel"
 
   const isStreamingActive = status === "connecting" || status === "playing"
@@ -64,13 +71,13 @@ export function ContentStreaming() {
                 Content Streaming
               </h3>
               <p className="text-zinc-400 text-sm leading-relaxed mt-2">
-                Fluxstream combines the power of catalog scraping and torrent playback. Browse catalogs resolved by media providers, or supply direct magnet links to play streams instantly.
+                Fluxstream is a sleek, self-hosted media client for torrent-based libraries. Play Creative Commons open movies, public domain video archives, or your personal legally sourced media collections instantly on-the-fly.
               </p>
             </div>
 
             <div className="flex flex-col gap-4 text-sm text-zinc-400">
               <p>
-                Connect modular addons to map index directories, or paste raw magnet links to parse files and stream video feeds directly in the browser player.
+                Connect your own self-hosted feeds and personal media indexes, or paste magnet links to stream files directly in a clean, web-based player.
               </p>
             </div>
 
@@ -88,15 +95,18 @@ export function ContentStreaming() {
                 </Link>
               </Button>
             </div>
+
+            <p className="text-xs font-mono text-zinc-500 mt-2">
+              * Note: The actual UI of the self-hosted web client will differ.
+            </p>
           </div>
 
           <div className="lg:col-span-7 w-full">
             <Tabs 
               value={activeTab} 
               onValueChange={(val) => {
-                if (!isStreamingActive) {
-                  setActiveTab(val as "providers" | "magnets")
-                }
+                setActiveTab(val as "providers" | "magnets")
+                setStatus("idle")
               }}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
@@ -121,16 +131,12 @@ export function ContentStreaming() {
               
               <div className="relative z-10 bg-zinc-900/50 border-b border-white/5 flex flex-col select-none">
                 <div className="flex items-center justify-between px-4 pt-3 pb-2.5">
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <div className="h-2 w-2 rounded-full bg-zinc-700" />
-                    <div className="h-2 w-2 rounded-full bg-zinc-700" />
-                    <div className="h-2 w-2 rounded-full bg-zinc-700" />
-                  </div>
+                  <MacDots size="sm" />
                   
                   <div className="flex-1 max-w-md mx-4">
                     <div className="w-full bg-black/40 border border-white/5 rounded-md py-1 px-3 text-[10px] font-mono text-zinc-500 text-center truncate">
                       {activeTab === "providers" 
-                        ? "fluxstream.app/providers/animeflow/frieren" 
+                        ? "fluxstream.app/providers/cc-media/sintel" 
                         : status === "playing" 
                           ? "fluxstream.app/player?stream=sintel"
                           : "fluxstream.app/add-magnet"
@@ -140,9 +146,9 @@ export function ContentStreaming() {
 
                   <div className="flex gap-2 text-zinc-650 shrink-0 text-[10px] font-mono min-w-[20px] justify-end">
                     {activeTab === "magnets" && status === "playing" && (
-                      <button onClick={handleReset} title="Reset" className="hover:text-white transition-colors cursor-pointer">
-                        <RefreshCw className="h-3 w-3 text-zinc-500 hover:text-white transition-colors" />
-                      </button>
+                      <Button variant="ghost" size="icon-xs" onClick={handleReset} title="Reset">
+                        <RefreshCw className="h-3 w-3" />
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -151,7 +157,6 @@ export function ContentStreaming() {
                   <TabsTrigger 
                     id="trigger-providers"
                     value="providers"
-                    disabled={isStreamingActive}
                     className="px-3 py-1.5 text-[10px] font-mono rounded-t-lg border-x border-t transition-all border-transparent bg-transparent text-zinc-500 hover:text-zinc-350 data-active:bg-zinc-950/60 data-active:border-white/10 data-active:text-white data-active:font-semibold disabled:opacity-50"
                   >
                     Media Providers
@@ -159,7 +164,6 @@ export function ContentStreaming() {
                   <TabsTrigger 
                     id="trigger-magnets"
                     value="magnets"
-                    disabled={isStreamingActive}
                     className="px-3 py-1.5 text-[10px] font-mono rounded-t-lg border-x border-t transition-all border-transparent bg-transparent text-zinc-500 hover:text-zinc-350 data-active:bg-zinc-950/60 data-active:border-white/10 data-active:text-white data-active:font-semibold disabled:opacity-50"
                   >
                     Stream Magnets
@@ -182,17 +186,50 @@ export function ContentStreaming() {
                   >
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
                       <div className="md:col-span-7 flex flex-col gap-2">
-                        <div className="relative aspect-video w-full rounded-xl bg-black border border-white/10 overflow-hidden flex flex-col items-center justify-center shadow-inner">
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-[1]" />
-                          <div className="relative z-10 flex flex-col items-center gap-2">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white select-none">
-                              <Play className="h-4 w-4 fill-white ml-0.5" />
+                        {status === "playing" ? (
+                          <div className="relative aspect-video w-full rounded-xl bg-black border border-white/10 overflow-hidden shadow-inner">
+                            <video
+                              src={selectedSource.videoUrl}
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              controls
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : status === "connecting" ? (
+                          <div className="relative aspect-video w-full rounded-xl bg-black border border-white/10 overflow-hidden flex flex-col items-center justify-center shadow-inner py-8 h-[166px]">
+                            <div className="h-8 w-8 rounded-full border-2 border-zinc-700 border-t-zinc-350 animate-spin" />
+                            <span className="text-[10px] font-mono text-zinc-400 mt-2">Connecting to swarm...</span>
+                          </div>
+                        ) : (
+                          <div 
+                            onClick={handleStream}
+                            className="relative aspect-video w-full rounded-xl bg-black border border-white/10 overflow-hidden flex flex-col items-center justify-center shadow-inner cursor-pointer group hover:border-white/20 transition-all"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-[1]" />
+                            <div className="relative z-10 flex flex-col items-center gap-2">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white group-hover:bg-white/10 group-hover:scale-105 transition-all select-none">
+                                <Play className="h-4 w-4 fill-white ml-0.5" />
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        )}
                         <div className="p-2 rounded bg-white/[0.02] border border-white/5 flex items-center justify-between text-[9px] font-mono text-zinc-400">
-                          <span>Streaming: S01E01 - 1080p.mkv</span>
-                          <span>Buffering &lt;3s</span>
+                          <span className="truncate max-w-[70%]">Streaming: {selectedSource.file}</span>
+                          {status === "playing" || status === "connecting" ? (
+                            <Button 
+                              variant="ghost" 
+                              size="xs" 
+                              onClick={handleReset}
+                              className="h-auto p-0 text-[9px] text-zinc-500 hover:text-white hover:bg-transparent"
+                            >
+                              Reset
+                            </Button>
+                          ) : (
+                            <span>Buffering &lt;3s</span>
+                          )}
                         </div>
                       </div>
 
@@ -200,27 +237,72 @@ export function ContentStreaming() {
                         <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Available Streams</span>
                         
                         <div className="flex flex-col gap-2">
-                          <div className="flex flex-col gap-1 p-2 rounded-lg bg-white/[0.04] border border-white/15">
-                            <span className="text-[10px] font-semibold text-white font-mono truncate">S01E01 - 1080p.mkv</span>
+                          <div 
+                            onClick={() => {
+                              setSelectedSource({
+                                file: "Sintel.2010.1080p.mkv",
+                                addon: "Blender Open Movies",
+                                size: "650 MB",
+                                videoUrl: "/sintel.webm"
+                              })
+                              handleStream()
+                            }}
+                            className={`flex flex-col gap-1 p-2 rounded-lg border transition-all cursor-pointer ${
+                              selectedSource.file === "Sintel.2010.1080p.mkv" && (status === "playing" || status === "connecting")
+                                ? "bg-white/[0.06] border-white/20"
+                                : "bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]"
+                            }`}
+                          >
+                            <span className="text-[10px] font-semibold text-white font-mono truncate">Sintel.2010.1080p.mkv</span>
                             <div className="flex items-center justify-between text-[9px] text-zinc-400 font-mono">
-                              <span>AnimeFlow Addon</span>
-                              <span>4.2 GB</span>
+                              <span>Blender Open Movies</span>
+                              <span>650 MB</span>
                             </div>
                           </div>
 
-                          <div className="flex flex-col gap-1 p-2 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors">
-                            <span className="text-[10px] font-semibold text-zinc-350 font-mono truncate">S01E01 - 720p.mkv</span>
+                          <div 
+                            onClick={() => {
+                              setSelectedSource({
+                                file: "BigBuckBunny.2008.1080p.mkv",
+                                addon: "Creative Commons Feed",
+                                size: "276 MB",
+                                videoUrl: "/bunny.webm"
+                              })
+                              handleStream()
+                            }}
+                            className={`flex flex-col gap-1 p-2 rounded-lg border transition-all cursor-pointer ${
+                              selectedSource.file === "BigBuckBunny.2008.1080p.mkv" && (status === "playing" || status === "connecting")
+                                ? "bg-white/[0.06] border-white/20"
+                                : "bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]"
+                            }`}
+                          >
+                            <span className="text-[10px] font-semibold text-zinc-350 font-mono truncate">BigBuckBunny.2008.1080p.mkv</span>
                             <div className="flex items-center justify-between text-[9px] text-zinc-500 font-mono">
-                              <span>CinematicDB Addon</span>
-                              <span>1.8 GB</span>
+                              <span>Creative Commons Feed</span>
+                              <span>276 MB</span>
                             </div>
                           </div>
 
-                          <div className="flex flex-col gap-1 p-2 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors">
-                            <span className="text-[10px] font-semibold text-zinc-350 font-mono truncate">Episode 01 [Subs].mkv</span>
+                          <div 
+                            onClick={() => {
+                              setSelectedSource({
+                                file: "TearsOfSteel.2012.720p.mkv",
+                                addon: "Archive.org Feed",
+                                size: "543 MB",
+                                videoUrl: "/tears.webm"
+                              })
+                              handleStream()
+                            }}
+                            className={`flex flex-col gap-1 p-2 rounded-lg border transition-all cursor-pointer ${
+                              selectedSource.file === "TearsOfSteel.2012.720p.mkv" && (status === "playing" || status === "connecting")
+                                ? "bg-white/[0.06] border-white/20"
+                                : "bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]"
+                            }`}
+                          >
+                            <span className="text-[10px] font-semibold text-zinc-350 font-mono truncate">TearsOfSteel.2012.720p.mkv</span>
                             <div className="flex items-center justify-between text-[9px] text-zinc-500 font-mono">
-                              <span>SubsPlease Addon</span>
-                              <span>820 MB</span>
+                              <span>Archive.org Feed</span>
+                              <span>543 MB</span>
                             </div>
                           </div>
                         </div>
@@ -238,84 +320,69 @@ export function ContentStreaming() {
                         : "opacity-0 translate-x-8 pointer-events-none blur-sm scale-98"
                     }`}
                   >
-                    <div className="relative grid grid-cols-1 grid-rows-1 w-full">
-                      <div
-                        className={`col-start-1 row-start-1 w-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                          status === "idle"
-                            ? "opacity-100 scale-100 pointer-events-auto blur-0"
-                            : "opacity-0 scale-95 pointer-events-none blur-sm"
-                        }`}
-                      >
-                        <div className="flex flex-col gap-5">
-                          <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">
-                              Add Torrent Magnet Link
-                            </label>
-                            <input
-                              type="text"
-                              readOnly
-                              value={magnetLink}
-                              className="w-full bg-black border border-white/10 rounded-lg p-3 text-xs font-mono text-zinc-350 select-all focus:outline-none"
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                      <div className="md:col-span-7 flex flex-col gap-2">
+                        {status === "playing" ? (
+                          <div className="relative aspect-video w-full rounded-xl bg-black border border-white/10 overflow-hidden shadow-inner">
+                            <video
+                              src="/sintel.webm"
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              controls
+                              className="w-full h-full object-cover"
                             />
                           </div>
-                          
-                          <button
+                        ) : status === "connecting" ? (
+                          <div className="relative aspect-video w-full rounded-xl bg-black border border-white/10 overflow-hidden flex flex-col items-center justify-center shadow-inner py-8 h-[166px]">
+                            <div className="h-8 w-8 rounded-full border-2 border-zinc-700 border-t-zinc-350 animate-spin" />
+                            <span className="text-[10px] font-mono text-zinc-400 mt-2">Connecting to swarm...</span>
+                          </div>
+                        ) : (
+                          <div 
                             onClick={handleStream}
-                            className="w-full py-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white font-mono text-xs font-semibold transition-all select-none cursor-pointer text-center"
+                            className="relative aspect-video w-full rounded-xl bg-black border border-white/10 overflow-hidden flex flex-col items-center justify-center shadow-inner cursor-pointer group hover:border-white/20 transition-all"
                           >
-                            Stream Magnet Link
-                          </button>
-
-                          <div className="border-t border-white/5 pt-4">
-                            <p className="text-[10px] font-mono text-zinc-500 leading-relaxed">
-                              Inputting a raw torrent magnet hash initializes local scrapers and connects directly to the DHT swarm network.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div
-                        className={`col-start-1 row-start-1 w-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                          status === "connecting"
-                            ? "opacity-100 scale-100 pointer-events-auto blur-0"
-                            : "opacity-0 scale-95 pointer-events-none blur-sm"
-                        }`}
-                      >
-                        <div className="flex flex-col items-center justify-center gap-3 py-12">
-                          <div className="h-8 w-8 rounded-full border-2 border-zinc-700 border-t-zinc-350 animate-spin" />
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-xs font-mono text-zinc-350">Connecting to swarm...</span>
-                            <span className="text-[9px] font-mono text-zinc-500">Resolving metadata & finding active peers</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {status === "playing" && (
-                        <div
-                          className="col-start-1 row-start-1 w-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] animate-[subTabEnter_0.4s_ease-out]"
-                        >
-                          <div className="flex flex-col gap-4">
-                            <div className="relative aspect-video w-full rounded-xl bg-black border border-white/10 overflow-hidden shadow-inner">
-                              <video
-                                src="/sintel.mp4"
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                controls
-                                className="w-full h-full object-cover"
-                              />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-[1]" />
+                            <div className="relative z-10 flex flex-col items-center gap-2">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white group-hover:bg-white/10 group-hover:scale-105 transition-all select-none">
+                                <Play className="h-4 w-4 fill-white ml-0.5" />
+                              </div>
                             </div>
+                          </div>
+                        )}
+                        <div className="p-2 rounded bg-white/[0.02] border border-white/5 flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                          <span className="truncate max-w-[70%]">Magnet: Sintel.2010.480p.mp4</span>
+                          {status === "playing" || status === "connecting" ? (
+                            <Button 
+                              variant="ghost" 
+                              size="xs" 
+                              onClick={handleReset}
+                              className="h-auto p-0 text-[9px] text-zinc-500 hover:text-white hover:bg-transparent"
+                            >
+                              Reset
+                            </Button>
+                          ) : (
+                            <span>Ready to Stream</span>
+                          )}
+                        </div>
+                      </div>
 
+                      <div className="md:col-span-5 flex flex-col gap-3">
+                        {status === "playing" ? (
+                          <div className="flex flex-col gap-3">
                             <div className="flex flex-col border border-white/10 bg-zinc-950/40 rounded-xl overflow-hidden">
                               <div className="border-b border-white/10 py-2 px-3 bg-white/[0.01] flex items-center justify-between">
                                 <span className="text-[10px] font-semibold font-mono text-zinc-300">Active Torrent Stream</span>
-                                <button 
+                                <Button 
+                                  variant="ghost"
+                                  size="xs"
                                   onClick={handleReset}
-                                  className="text-[9px] font-mono text-zinc-500 hover:text-white transition-colors cursor-pointer"
+                                  className="h-auto p-0 text-[9px] font-mono text-zinc-500 hover:text-white hover:bg-transparent"
                                 >
                                   Reset Player
-                                </button>
+                                </Button>
                               </div>
                               
                               <div className="p-3 flex flex-col gap-1 font-mono text-[9px] text-zinc-500">
@@ -331,9 +398,48 @@ export function ContentStreaming() {
                                 </div>
                               </div>
                             </div>
+
+                            <div className="flex flex-col gap-1.5 mt-1">
+                              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Magnet URI</span>
+                              <input
+                                type="text"
+                                readOnly
+                                value={magnetLink}
+                                className="w-full bg-black border border-white/10 rounded-lg px-2.5 py-1.5 text-[9px] font-mono text-zinc-400 select-all focus:outline-none"
+                              />
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-2">
+                              <label className="text-[10px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">
+                                Add Torrent Magnet Link
+                              </label>
+                              <input
+                                type="text"
+                                readOnly
+                                value={magnetLink}
+                                className="w-full bg-black border border-white/10 rounded-lg p-3 text-xs font-mono text-zinc-350 select-all focus:outline-none"
+                              />
+                            </div>
+                            
+                            <Button
+                              variant="secondary"
+                              onClick={handleStream}
+                              disabled={status === "connecting"}
+                              className="w-full font-mono text-xs"
+                            >
+                              {status === "connecting" ? "Connecting to Swarm..." : "Stream Magnet Link"}
+                            </Button>
+
+                            <div className="border-t border-white/5 pt-4">
+                              <p className="text-[10px] font-mono text-zinc-500 leading-relaxed">
+                                Inputting a torrent magnet link connects your browser player directly to the peer-to-peer network to start streaming.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

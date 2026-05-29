@@ -1,0 +1,63 @@
+---
+title: Installation
+description: Simple steps to deploy the Fluxstream server on your system.
+---
+
+import { Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Set up your self-hosted streaming player in under five minutes. Choose your preferred deployment route below.
+
+<Tabs items={['Docker (Recommended)', 'NPM / Node.js']}>
+  <Tab value="Docker (Recommended)">
+    Ensure you have Docker and Docker Compose installed, then spin up the container:
+    ```bash
+    docker run -d \
+      -p 3000:3000 \
+      -p 6881:6881/tcp \
+      -p 6881:6881/udp \
+      -v fluxstream-data:/data \
+      --name fluxstream \
+      fluxstream/player:latest
+    ```
+  </Tab>
+  <Tab value="NPM / Node.js">
+    Install the package globally using npm or yarn:
+    ```bash
+    npm install -g @fluxstream/server
+    # Run the setup script to initialize config
+    fluxstream-setup
+    ```
+  </Tab>
+</Tabs>
+
+### Getting Started
+
+Once the script completes, execute the steps below to configure your settings:
+
+<Steps>
+
+### Configure the Environment
+Create a `.env` file in your root folder:
+```sh
+PORT=3000
+DATA_DIR=/data
+MAX_PEERS=100
+TORRENT_PORT=6881
+```
+
+### Launch the Daemon
+Fire up the Fluxstream service daemon:
+```bash
+fluxstream start
+```
+
+### Access the Portal
+Open your browser to `http://localhost:3000`. You will see the clean web client. You can immediately paste a magnet link or register media providers.
+
+</Steps>
+
+<Callout type="warn">
+  Ensure port `6881` is forwarded in your router firewall to enable high speed peer connections from the BitTorrent network.
+</Callout>

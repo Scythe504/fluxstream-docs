@@ -6,4 +6,4 @@ const withMdx = createMDX({
   configPath: "source.config.ts"
 })
 
-export default nextConfig
+export default withMdx(nextConfig)

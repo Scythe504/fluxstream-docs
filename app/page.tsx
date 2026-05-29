@@ -11,23 +11,23 @@ import { DocumentNavigator } from "@/components/landing/document-navigator"
 import { Footer } from "@/components/footer"
 
 export const metadata: Metadata = {
-  title: "Fluxstream - Open Source Torrent Streaming Engine",
-  description: "Fluxstream is a high-performance, open-source torrent streaming engine. Watch anime, movies, series, and video providers directly on-the-fly without waiting for complete file downloads.",
+  title: "Fluxstream - Open Source Torrent Media Player",
+  description: "Fluxstream is a sleek, self-hosted media client for torrent libraries. Instantly stream Creative Commons open movies, public domain media, or your legally owned personal torrent backups directly on-the-fly.",
   keywords: [
-    "torrent streaming engine",
+    "torrent media player",
+    "realtime streaming",
     "open source",
-    "video streaming",
-    "stream anime",
-    "stream movies",
-    "stream series",
+    "video player",
     "magnet link player",
     "instant playback",
     "fluxstream",
-    "media providers"
+    "personal media streaming",
+    "public domain media",
+    "legal torrent streaming"
   ],
   openGraph: {
-    title: "Fluxstream - Open Source Torrent Streaming Engine",
-    description: "Watch movies, series, and anime instantly on-the-fly using the open-source Fluxstream torrent engine.",
+    title: "Fluxstream - Open Source Torrent Media Player",
+    description: "Stream Creative Commons open movies, public domain video feeds, or personal backups instantly on-the-fly using the open-source Fluxstream self-hosted client.",
     type: "website",
   }
 }

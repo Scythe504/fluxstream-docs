@@ -1,0 +1,45 @@
+---
+title: Introduction
+description: Welcome to Fluxstream, the sleek, self-hosted torrent media client.
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal, Database, Settings } from 'lucide-react';
+
+Fluxstream is a premium, self-hosted media client for torrent-based video archives. It is built as a **bring-your-own-media** player, functioning as a real-time playback engine. Paste a magnet link or connect to your own legal media feeds, and Fluxstream will parse the streaming swarm in real-time, allowing instant playback in a beautiful browser client.
+
+<Callout type="info">
+  Fluxstream does not index, host, or distribute copyrighted media files. It is an open-source tool designed for playing Creative Commons content, public archives, and personal torrent backups.
+</Callout>
+
+### Key Architectures
+
+* **Real-time Streaming Engine**: Avoid waiting for full downloads. The client starts playback by prioritizing the sequential blocks needed for the video buffer.
+* **Addon-friendly Architecture**: Register media providers or personal scraper feeds in seconds to group media collections cleanly.
+* **Privacy First**: Fully self-hosted with no remote analytics, external trackers, or telemetry.
+
+### Documentation Directory
+
+Select a category below to configure and launch your self-hosted instance.
+
+<Cards>
+  <Card 
+    icon={<Terminal />} 
+    title="Installation" 
+    href="/docs/installation" 
+    description="Deploy the Fluxstream engine via Docker or NPM." 
+  />
+  <Card 
+    icon={<Database />} 
+    title="Media Providers" 
+    href="/docs/providers" 
+    description="Connect external feeds and open media catalogs." 
+  />
+  <Card 
+    icon={<Settings />} 
+    title="Streaming Engine API" 
+    href="/docs/api" 
+    description="Integrate and query the player engine via REST endpoints." 
+  />
+</Cards>

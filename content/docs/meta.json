@@ -1,0 +1,9 @@
+{
+  "title": "Fluxstream Docs",
+  "pages": [
+    "index",
+    "installation",
+    "providers",
+    "api"
+  ]
+}

@@ -1,0 +1,50 @@
+---
+title: Media Providers
+description: Connect and manage content libraries, directories, and legal torrent catalogs.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Fluxstream supports custom external catalogs via a modular **Addon Architecture**. An addon is simply a JSON manifest hosting endpoints that serve media lists (Creative Commons films, public archives, and legally owned collections).
+
+### Registering a Provider
+
+You can add providers in two ways:
+1. **Via UI**: In the web player, navigate to settings and click **Register Addon**. Paste the provider manifest URL.
+2. **Via Config**: Edit your local provider configuration file:
+
+```json
+{
+  "providers": [
+    {
+      "id": "cc-movies",
+      "name": "Creative Commons Open Movies",
+      "endpoint": "https://feeds.fluxstream.app/cc-movies.json"
+    }
+  ]
+}
+```
+
+### Manifest Schema
+
+If you wish to host your own legal provider catalog, implement this JSON structure:
+
+```json
+{
+  "id": "my-legal-movies",
+  "name": "Public Domain Feed",
+  "version": "1.0.0",
+  "streams": [
+    {
+      "title": "Sintel (1080p)",
+      "magnet": "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel",
+      "size": "650 MB",
+      "category": "Sci-Fi"
+    }
+  ]
+}
+```
+
+<Callout type="info">
+  Catalogs are loaded and cached locally in the SQLite database to avoid latency and protect search queries.
+</Callout>

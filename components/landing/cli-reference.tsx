@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { WindowCard } from "../window-card"
 
 function AnsiLogo() {
   return (
@@ -29,16 +30,15 @@ export function CliReference() {
             Command Line Reference
           </h3>
           <p className="text-zinc-400 text-sm max-w-2xl leading-relaxed">
-            Control your local streaming daemon, configure media scraping providers, and query indexes directly from the CLI shell.
+            Control your local streaming daemon, configure self-hosted media feeds, and query directories directly from the CLI shell.
           </p>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-zinc-950/80 p-4 font-mono text-xs text-zinc-300 shadow-2xl leading-relaxed">
-          <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
-            <span className="text-zinc-500">fluxstream cli guide</span>
-            <span className="text-zinc-600">v0.4.0</span>
-          </div>
-          
+        <WindowCard
+          title="fluxstream cli guide"
+          subtitle="v0.4.0"
+          dotSize="md"
+        >
           <AnsiLogo />
 
           <pre className="overflow-x-auto scrollbar-hide text-left whitespace-pre">
@@ -64,7 +64,7 @@ export function CliReference() {
             <span className="text-yellow-500">-v, --version</span>   {"version for fluxstream\n\n" +
              'Use "fluxstream [command] --help" for more information about a command.'}
           </pre>
-        </div>
+        </WindowCard>
 
         <div className="flex items-center gap-4">
           <Button asChild>

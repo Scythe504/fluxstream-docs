@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef, Fragment } from "react"
 import Link from "next/link"
 import { Sparkles } from "lucide-react"
+import { Button } from "../ui/button"
+import { handleScroll } from "../../lib/utils"
 
 const words = ["flow", "stream"]
 
@@ -146,7 +148,7 @@ export function HeroSection() {
             aria-hidden="true"
             className="w-full h-full object-cover opacity-85 mix-blend-screen"
           >
-            <source src="/bg-hero.mp4" type="video/mp4" />
+            <source src="/bg-hero.webm" type="video/webm" />
           </video>
         </div>
 
@@ -212,30 +214,25 @@ export function HeroSection() {
             >
               <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
                 <div className="flex gap-2">
-                  <button 
+                  <Button 
                     onClick={() => setActiveTab("unix")}
-                    className={`text-xs font-mono px-2.5 py-1 rounded transition-colors ${
-                      activeTab === "unix" 
-                        ? "bg-white/10 text-white font-medium" 
-                        : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
+                    className={`text-xs font-mono px-2.5 py-1 rounded transition-colors`}
+                    variant={activeTab === "unix" ? "default" : "secondary"}
+                    >
                     Linux / macOS
-                  </button>
-                  <button 
+                  </Button>
+                  <Button 
                     onClick={() => setActiveTab("windows")}
-                    className={`text-xs font-mono px-2.5 py-1 rounded transition-colors ${
-                      activeTab === "windows" 
-                        ? "bg-white/10 text-white font-medium" 
-                        : "text-zinc-500 hover:text-zinc-300"
-                    }`}
+                    className={`text-xs font-mono px-2.5 py-1 rounded transition-colors}`}
+                    variant={activeTab === "windows" ? "default" : "secondary"}
                   >
                     Windows
-                  </button>
+                  </Button>
                 </div>
                 
                 <Link 
                   href="#cli-commands"
+                  onClick={(e) => handleScroll(e, "cli-commands")}
                   className="text-xs font-mono px-2 py-0.5 rounded text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition-colors inline-flex items-center gap-1 cursor-pointer"
                 >
                   Explore CLI →
@@ -265,9 +262,10 @@ export function HeroSection() {
                     </span>
                   )}
                 </div>
-                <button 
+                <Button 
                   onClick={handleCopy}
-                  className="shrink-0 p-1.5 rounded hover:bg-white/5 text-zinc-400 hover:text-white transition-colors"
+                  variant={"ghost"}
+                  className="shrink-0 p-1.5 rounded hover:bg-white/5 text-zinc-400 hover:text-white transition-all duration-200"
                   title="Copy Command"
                 >
                   {copied ? (
@@ -277,7 +275,7 @@ export function HeroSection() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                     </svg>
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

@@ -1,0 +1,70 @@
+---
+title: Streaming Engine API
+description: Query, control, and monitor torrent stream downloads programmatically.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Fluxstream exposes a REST API on the background server port, allowing external developers to query active download states and control stream caches.
+
+### Base Endpoint
+
+All requests are authenticated via the API token if configured:
+```bash
+http://localhost:3000/api/v1
+```
+
+### 1. Initiate a Stream
+
+Register a new magnet link or torrent file with the sequential buffer download cache.
+
+* **Method**: `POST`
+* **Route**: `/stream`
+* **Payload**:
+```json
+{
+  "magnet": "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel"
+}
+```
+* **Response (202 Accepted)**:
+```json
+{
+  "infoHash": "08ada5a7a6183aae1e09d831df6748d566095a10",
+  "status": "connecting",
+  "playUrl": "http://localhost:3000/api/v1/stream/08ada5a7/play"
+}
+```
+
+### 2. Query Stream Performance
+
+Fetch live stats of active torrent swarms, seeds, and download speeds.
+
+* **Method**: `GET`
+* **Route**: `/stream/:infoHash`
+* **Response (200 OK)**:
+```json
+{
+  "infoHash": "08ada5a7a6183aae1e09d831df6748d566095a10",
+  "seeds": 126,
+  "peers": 43,
+  "downloadSpeed": "8.4 MB/s",
+  "progress": 0.18
+}
+```
+
+### 3. Terminate a Stream
+
+Clean up download buffers and close peer-to-peer network connections.
+
+* **Method**: `DELETE`
+* **Route**: `/stream/:infoHash`
+* **Response (200 OK)**:
+```json
+{
+  "message": "Stream terminated successfully and cache cleared."
+}
+```
+
+<Callout type="warn">
+  Deleting stream entries will release storage. Ensure media tracks are not being read by clients before calling terminate.
+</Callout>
