@@ -29,7 +29,7 @@ export function Footer() {
         <div className="md:col-span-6 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <span className="text-base font-bold text-white font-mono tracking-tight">fluxstream</span>
-            <span className="text-[9px] font-mono bg-white/5 border border-white/10 text-zinc-400 px-1.5 py-0.5 rounded">v0.4.0</span>
+            <span className="text-[9px] font-mono bg-white/5 border border-white/10 text-zinc-400 px-1.5 py-0.5 rounded">v0.2.0</span>
           </div>
           <p className="text-xs text-zinc-400 font-mono leading-relaxed max-w-sm">
             High-performance, open-source torrent streaming daemon and client. Watch magnet links and video feeds on-the-fly.

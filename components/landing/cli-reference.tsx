@@ -7,7 +7,7 @@ import { WindowCard } from "../window-card"
 
 export function AnsiLogo() {
   return (
-    <pre className="ansi-logo-pre font-mono leading-none select-none text-[5px] sm:text-[8px] md:text-[9px] text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-zinc-950/20 py-4 border-b border-white/5 mb-4 text-left whitespace-pre overflow-x-auto scrollbar-hide">
+    <pre className="ansi-logo-pre font-mono leading-none select-none text-[5px] sm:text-[8px] md:text-[9px] text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 bg-zinc-950/20 py-4 border-b border-white/5 mb-4 text-left whitespace-pre overflow-x-auto scrollbar-hide">
 {`███████╗██╗     ██╗   ██╗██╗  ██╗███████╗████████╗██████╗ ███████╗ █████╗ ███╗   ███╗
 ██╔════╝██║     ██║   ██║╚██╗██╔╝██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗ ████║
 ███████╗██║     ██║   ██║ ╚███╔╝ ███████╗   ██║   ██████╔╝█████╗  ███████║██╔████╔██║
@@ -24,7 +24,7 @@ export function CliReference({ isDocs = false, hideCopy = false }: { isDocs?: bo
       <div className="w-full my-6">
         <WindowCard
           title="fluxstream cli guide"
-          subtitle="v0.4.0"
+          subtitle="v0.2.0"
           dotSize="md"
           hideCopy={hideCopy}
         >
@@ -74,7 +74,7 @@ export function CliReference({ isDocs = false, hideCopy = false }: { isDocs?: bo
 
         <WindowCard
           title="fluxstream cli guide"
-          subtitle="v0.4.0"
+          subtitle="v0.2.0"
           dotSize="md"
           hideCopy={hideCopy}
         >
