@@ -71,7 +71,7 @@ export function TechnicalDetails() {
                 Fluxstream is free software licensed under the GNU Affero General Public License. This ensures the engine remains open-source, and any modifications deployed as network services are shared back with the community.
               </p>
               <Link 
-                href="https://github.com/Scythe504/fluxstream?tab=AGPL-3.0-1-ov-file"
+                href="https://github.com/Scythe504/fluxstream/blob/main/LICENSE"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-zinc-500 hover:text-white font-mono transition-colors inline-flex items-center gap-1 mt-1"

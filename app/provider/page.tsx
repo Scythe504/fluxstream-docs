@@ -30,15 +30,29 @@ interface Provider {
   created_at: number
 }
 
+const DEFAULT_BACKEND_URL = "https://providers.fluxstream.app"
+
 function ProviderFormAndStatus() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const providerId = searchParams.get("id")
 
   // Configurable backend URL state
-  const [backendUrl, setBackendUrl] = useState(process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8082")
+  const [backendUrl, setBackendUrl] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("fluxstream_backend_url")
+      if (saved) return saved
+    }
+    return process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL
+  })
   const [isEditingBackend, setIsEditingBackend] = useState(false)
-  const [tempBackendUrl, setTempBackendUrl] = useState(process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8082")
+  const [tempBackendUrl, setTempBackendUrl] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("fluxstream_backend_url")
+      if (saved) return saved
+    }
+    return process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL
+  })
 
   // Form states
   const [name, setName] = useState("")
@@ -50,25 +64,25 @@ function ProviderFormAndStatus() {
 
   // Status check states
   const [provider, setProvider] = useState<Provider | null>(null)
-  const [statusLoading, setStatusLoading] = useState(false)
   const [statusError, setStatusError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-
-  // Load backend URL from localStorage if available
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("fluxstream_backend_url")
-      if (saved) {
-        setBackendUrl(saved)
-        setTempBackendUrl(saved)
-      }
-    }
-  }, [])
+  const [retryCount, setRetryCount] = useState(0)
 
   // Save backend URL
   const saveBackendUrl = () => {
-    localStorage.setItem("fluxstream_backend_url", tempBackendUrl)
-    setBackendUrl(tempBackendUrl)
+    const cleaned = tempBackendUrl.trim().replace(/\/+$/, "")
+    const target = cleaned || process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL
+    localStorage.setItem("fluxstream_backend_url", target)
+    setBackendUrl(target)
+    setTempBackendUrl(target)
+    setIsEditingBackend(false)
+  }
+
+  const resetBackendUrl = () => {
+    localStorage.removeItem("fluxstream_backend_url")
+    const target = process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL
+    setBackendUrl(target)
+    setTempBackendUrl(target)
     setIsEditingBackend(false)
   }
 
@@ -88,22 +102,22 @@ function ProviderFormAndStatus() {
           provider_name: name,
           provider_url: url,
           provider_type: type,
-          disable_optional: false,
+          disable_optional: disableOptional,
         }),
       })
 
-      
       if (!response.ok) {
         const errorText = await response.text()
-        console.log({ headers: response.headers, response })
+        console.error("Registration error response:", { status: response.status, errorText })
         throw new Error(errorText || `Request failed with status ${response.status}`)
       }
 
       const data: Provider = await response.json()
       // Redirect to the status view by setting the query parameter
       router.push(`/provider?id=${data.id}`)
-    } catch (err: any) {
-      setFormError(err.message || "Failed to register provider. Make sure your registry backend is running.")
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to register provider. Make sure your registry backend is running."
+      setFormError(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -112,12 +126,10 @@ function ProviderFormAndStatus() {
   // Poll for provider status verification
   useEffect(() => {
     if (!providerId) {
-      setProvider(null)
       return
     }
 
-    let intervalId: NodeJS.Timeout
-    setStatusLoading(true)
+    let isMounted = true
 
     const fetchStatus = async () => {
       try {
@@ -126,27 +138,34 @@ function ProviderFormAndStatus() {
           throw new Error("Provider not found or registry connection failed")
         }
         const data: Provider = await response.json()
-        setProvider(data)
-        setStatusError(null)
+        if (isMounted) {
+          setProvider(data)
+          setStatusError(null)
+        }
 
         // Stop polling if verification is complete (either succeeded or failed)
         if (!data.verification_pending) {
           clearInterval(intervalId)
         }
-      } catch (err: any) {
-        setStatusError(err.message || "Failed to retrieve status")
-        clearInterval(intervalId)
-      } finally {
-        setStatusLoading(false)
+      } catch (err: unknown) {
+        if (isMounted) {
+          const message = err instanceof Error ? err.message : "Failed to retrieve status"
+          setStatusError(message)
+        }
       }
     }
 
-    fetchStatus()
+    void fetchStatus()
     // Poll every 2 seconds
-    intervalId = setInterval(fetchStatus, 2000)
+    const intervalId = setInterval(() => {
+      void fetchStatus()
+    }, 2000)
 
-    return () => clearInterval(intervalId)
-  }, [providerId, backendUrl])
+    return () => {
+      isMounted = false
+      clearInterval(intervalId)
+    }
+  }, [providerId, backendUrl, retryCount])
 
   const copyToClipboard = () => {
     if (provider?.id) {
@@ -175,6 +194,53 @@ function ProviderFormAndStatus() {
       <Navbar />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-12">
+        {/* Backend Registry Info & Config Bar */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2.5 rounded-lg border border-white/10 bg-zinc-900/40 text-xs font-mono text-zinc-400">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="text-[10px] uppercase font-semibold text-zinc-500 shrink-0">Registry Backend:</span>
+            <code className="text-zinc-300 bg-zinc-950 px-2 py-0.5 rounded border border-white/5 truncate max-w-xs sm:max-w-md">
+              {backendUrl}
+            </code>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setTempBackendUrl(backendUrl)
+              setIsEditingBackend(!isEditingBackend)
+            }}
+            className="text-[11px] text-pink-400 hover:text-pink-300 flex items-center gap-1.5 shrink-0 transition-colors w-fit"
+          >
+            <Settings2 className="h-3.5 w-3.5" />
+            {isEditingBackend ? "Close Settings" : "Configure Backend"}
+          </button>
+        </div>
+
+        {isEditingBackend && (
+          <div className="mb-6 p-4 rounded-lg border border-pink-500/20 bg-zinc-950/80 space-y-3 font-mono shadow-lg">
+            <div className="text-xs font-semibold text-white">Custom Registry Backend Endpoint</div>
+            <p className="text-[11px] text-zinc-400">
+              Override the registry URL for this browser session to test against a local or custom instance.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="url"
+                value={tempBackendUrl}
+                onChange={(e) => setTempBackendUrl(e.target.value)}
+                placeholder="https://providers.fluxstream.app"
+                className="flex-1 bg-zinc-900 border border-white/10 rounded px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-pink-500/50"
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={saveBackendUrl} className="text-xs h-8 cursor-pointer">
+                  Save
+                </Button>
+                <Button size="sm" variant="outline" onClick={resetBackendUrl} className="text-xs h-8 border-white/10 text-zinc-400 hover:text-white cursor-pointer">
+                  Reset Default
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {!providerId ? (
           /* ==================== FORM VIEW ==================== */
           <Card className="border border-white/10 bg-zinc-950/50 backdrop-blur-md overflow-hidden relative shadow-xl shadow-pink-500/5">
@@ -322,14 +388,27 @@ function ProviderFormAndStatus() {
                   Could not retrieve status for provider ID <code className="text-red-400 bg-red-950/20 px-1 py-0.5 rounded">{providerId}</code>.
                   Ensure the registry database connection is established at {backendUrl}.
                 </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push("/provider")}
-                  className="w-fit border-red-500/20 text-red-400 hover:bg-red-500/10 font-mono mt-2"
-                >
-                  Return to Form
-                </Button>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setStatusError(null)
+                      setRetryCount((prev) => prev + 1)
+                    }}
+                    className="border-white/10 text-zinc-300 hover:text-white font-mono text-xs cursor-pointer"
+                  >
+                    Retry Verification Check
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push("/provider")}
+                    className="border-red-500/20 text-red-400 hover:bg-red-500/10 font-mono text-xs cursor-pointer"
+                  >
+                    Return to Form
+                  </Button>
+                </div>
               </div>
             ) : !provider ? (
               <div className="flex flex-col items-center justify-center py-20 text-zinc-400 font-mono">

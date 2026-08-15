@@ -24,7 +24,7 @@ export function CliReference({ isDocs = false, hideCopy = false }: { isDocs?: bo
       <div className="w-full my-6">
         <WindowCard
           title="fluxstream cli guide"
-          subtitle="v0.2.0"
+          subtitle="v0.2.2"
           dotSize="md"
           hideCopy={hideCopy}
         >
@@ -74,7 +74,7 @@ export function CliReference({ isDocs = false, hideCopy = false }: { isDocs?: bo
 
         <WindowCard
           title="fluxstream cli guide"
-          subtitle="v0.2.0"
+          subtitle="v0.2.2"
           dotSize="md"
           hideCopy={hideCopy}
         >
